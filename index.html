@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Viewer</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 18px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        select, input, button {
+            margin: 0 10px;
+            font-size: 18px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: left;
+            width: 100%;
+            max-width: 600px;
+        }
+        ul li {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+            font-family: monospace;
+        }
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+        .no-logs {
+            margin-top: 20px;
+            font-style: italic;
+        }
+        .highlight {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Log Viewer</h1>
+        <div class="controls">
+            <input type="text" id="keyword" placeholder="Keyword">
+            <select id="limit">
+                <option value="1">1</option>
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="100">100</option>
+            </select>
+            <select id="file-select"></select>
+            <button onclick="fetchLogs()">Fetch</button>
+        </div>
+        <ul id="log-list"></ul>
+        <div id="error-message" class="error"></div>
+    </div>
+
+    <script>
+        async function fetchFiles() {
+            try {
+                const response = await fetch('http://localhost:3000/logs');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const files = await response.json();
+                const fileSelect = document.getElementById('file-select');
+                fileSelect.innerHTML = '';
+                files.forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = file;
+                    fileSelect.appendChild(option);
+                });
+            } catch (error) {
+                document.getElementById('error-message').textContent = `Error fetching files: ${error.message}`;
+            }
+        }
+
+        async function fetchLogs() {
+            const selectedFile = document.getElementById('file-select').value;
+            const keyword = document.getElementById('keyword').value;
+            const limit = document.getElementById('limit').value;
+            const errorMessage = document.getElementById('error-message');
+            const logList = document.getElementById('log-list');
+
+            errorMessage.textContent = '';
+            logList.innerHTML = '';
+
+            try {
+                const response = await fetch(`http://localhost:3000/logs/${selectedFile}?keyword=${keyword}&limit=${limit}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const logs = await response.json();
+                if (logs.length === 0) {
+                    logList.innerHTML = '<li class="no-logs">No Logs Have Been Found!</li>';
+                } else {
+                    logs.forEach((line, index) => {
+                        const li = document.createElement('li');
+                        if (keyword) {
+                            const regex = new RegExp(`(${keyword})`, 'gi');
+                            li.innerHTML = `${index + 1}. ${line.replace(regex, '<span class="highlight">$1</span>')}`;
+                        } else {
+                            li.textContent = `${index + 1}. ${line}`;
+                        }
+                        logList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                errorMessage.textContent = `Error fetching logs: ${error.message}`;
+            }
+        }
+
+        window.onload = () => {
+            fetchFiles();
+            setInterval(fetchFiles, 30000); // Fetch files every 30 seconds
+        };
+    </script>
+</body>
+</html>
