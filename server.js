@@ -8,7 +8,8 @@ const app = express();
 app.use(bodyParser.json());
 
 const LOG_DIR = '/var/log';
-const TEXT_FILE_REGEX = /\.(log|txt|out|in|csv)$/i;  // Add other extensions as needed
+const TEXT_FILE_REGEX = /\.(log|txt|out|in|csv)$/i;
+const FIVE_MB = 1024 * 1024 * 5;
 
 // Serve index.html
 app.get('/', (req, res) => {
@@ -45,7 +46,7 @@ app.get('/logs/:filename', async (req, res) => {
     const fileStats = fs.statSync(filePath);
     const fileSize = fileStats.size;
     const stream = fs.createReadStream(filePath, {
-        start: Math.max(0, fileSize - 1024 * 1024 * 5) // Read last 5MB
+        start: Math.max(0, fileSize - FIVE_MB) // Read last 5MB
     });
 
     const rl = readline.createInterface({
