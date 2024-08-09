@@ -25,24 +25,25 @@ const readLogLines = async (filePath, start, keyword, limit) => {
     });
 
     let lines = [];
+    const result = {
+        lines: [],
+        count: 0
+    }
     try {
         for await (const line of rl) {
             if (!keyword || line.includes(keyword)) {
-                lines.push(line);
-                count += 1;
-                if (lines.length >= limit) break;
+                result.lines.push(line);
+                result.count += 1;
+                if (result.count >= limit) break;
             }
         }
     } catch (error) {
         console.error(`Error reading log lines: ${error.message}`);
-        throw error;
+        return result;
     }
 
     console.log(`Read ${count} log lines`);
-    return {
-        count,
-        lines
-    };
+    return result;
 };
 
 // Serve index.html
@@ -54,7 +55,7 @@ app.get('/', (req, res) => {
 const isTextLogFile = (filename) => TEXT_FILE_REGEX.test(filename);
 
 // Endpoint to list available log files
-app.get('/logs', async (req, res) => {
+app.get('/files', async (req, res) => {
     try {
         console.log(`Listing log files in directory: ${LOG_DIR}`);
         const files = fs.readdirSync(LOG_DIR).filter(isTextLogFile);
@@ -71,8 +72,7 @@ app.get('/logs/:filename', async (req, res) => {
     const { keyword, limit = 100 } = req.query;
     const filePath = path.join(LOG_DIR, filename);
 
-    console.log(`Fetching logs from file: ${filename} with keyword: ${keyword} and limit: ${limit}`);
-
+    console.log(`Fetching logs from file: ${filename} with keyword: ${keyword || ''} and limit: ${limit}`);
     if (!isTextLogFile(filename)) {
         console.error(`Invalid file type requested: ${filename}`);
         return res.status(400).send('Invalid file type. Only text log files are supported.');

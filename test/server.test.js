@@ -20,8 +20,8 @@ afterAll((done) => {
 });
 
 describe('Log Collection API', () => {
-  test('GET /logs - success', async () => {
-    const res = await request(app).get('/logs');
+  test('GET /files - success', async () => {
+    const res = await request(app).get('/files');
     expect(res.statusCode).toBe(200);
   });
 

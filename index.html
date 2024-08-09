@@ -90,7 +90,7 @@
     <script>
         async function fetchFiles() {
             try {
-                const response = await fetch('http://localhost:3000/logs');
+                const response = await fetch('http://localhost:3000/files');
                 if (!response.ok) throw new Error('Network response was not ok');
                 const files = await response.json();
                 const fileSelect = document.getElementById('file-select');
