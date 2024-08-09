@@ -1,0 +1,21 @@
+{
+  "name": "log-collector",
+  "version": "1.0.0",
+  "description": "Small Mini Log Collector Take Home Assignment",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest --detectOpenHandles"
+  },
+  "keywords": [],
+  "author": "Samir Musali",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
